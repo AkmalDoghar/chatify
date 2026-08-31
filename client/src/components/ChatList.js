@@ -476,6 +476,8 @@ export default function ChatList({
                       {lastMsg
                         ? lastMsg.messageType === 'image'
                           ? '📷 Image'
+                          : lastMsg.messageType === 'voice'
+                          ? '🎤 Voice message'
                           : lastMsg.content
                         : 'No messages yet'}
                     </p>

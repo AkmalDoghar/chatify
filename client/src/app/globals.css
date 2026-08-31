@@ -6,8 +6,8 @@
   --bg-subtle: #F0EAE1;
   --text-primary: #22242A;
   --text-muted: #8A8F98;
-  --accent-coral: #E2725B;
-  --accent-coral-hover: #D55E47;
+  --accent-coral: #54c250;
+  --accent-coral-hover: #4bad48;
   --accent-coral-light: #FDF1EE;
   --accent-teal: #3F8F82;
   --accent-teal-light: #EBF4F3;
@@ -107,6 +107,11 @@ body.auth-page {
   0% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.2); opacity: 0.7; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.15); }
 }
 
 @keyframes spinBounce {

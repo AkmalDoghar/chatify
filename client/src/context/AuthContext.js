@@ -17,15 +17,29 @@ export const AuthProvider = ({ children }) => {
       if (storedUser) {
         try {
           const parsedUser = JSON.parse(storedUser);
-          const response = await api.get('/auth/me');
-          const freshUser = { ...response.data, token: parsedUser.token };
-          setUser(freshUser);
-          localStorage.setItem('chatify_user', JSON.stringify(freshUser));
-          const socketInstance = initSocket();
-          socketInstance.connect();
-          socketInstance.emit('setup', freshUser);
-          setSocket(socketInstance);
+          if (parsedUser && parsedUser.token) {
+            // Instantly hydrate user state so page load does NOT flash login or redirect
+            setUser(parsedUser);
+            _connectSocket(parsedUser);
+
+            // Fetch latest user details in background
+            try {
+              const response = await api.get('/auth/me');
+              const freshUser = { ...response.data, token: parsedUser.token };
+              setUser(freshUser);
+              localStorage.setItem('chatify_user', JSON.stringify(freshUser));
+            } catch (error) {
+              console.error('Failed to verify token on /auth/me:', error);
+              // Only clear user session if backend explicitly rejected auth (401)
+              if (error.response && error.response.status === 401) {
+                localStorage.removeItem('chatify_user');
+                setUser(null);
+                setSocket(null);
+              }
+            }
+          }
         } catch (error) {
+          console.error('Error parsing stored user:', error);
           localStorage.removeItem('chatify_user');
           setUser(null);
         }
@@ -57,10 +71,16 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
-  // Step 2: Verify OTP and create account (Redirects to login afterwards)
+  // Step 2: Verify OTP and create account (Auto logs in user)
   const verifySignupOTP = async (email, otp) => {
     const response = await api.post('/auth/signup/verify-otp', { email, otp });
-    return response.data;
+    const userData = response.data;
+    if (userData && userData.token) {
+      setUser(userData);
+      localStorage.setItem('chatify_user', JSON.stringify(userData));
+      _connectSocket(userData);
+    }
+    return userData;
   };
 
   // Step 1: Send OTP for password reset

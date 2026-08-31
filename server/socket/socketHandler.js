@@ -53,8 +53,12 @@ const socketHandler = (io) => {
         return console.log('chat.participants not defined');
       }
 
+      const senderId = newMessageReceived.sender?._id?.toString() || newMessageReceived.sender?.toString();
+
       chat.participants.forEach((participant) => {
         const participantId = typeof participant === 'object' ? participant._id.toString() : participant.toString();
+        // Skip the sender — they already added it to local state optimistically
+        if (participantId === senderId) return;
         io.to(participantId).emit('message_received', newMessageReceived);
       });
     });

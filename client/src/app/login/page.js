@@ -201,13 +201,12 @@ export default function LoginPage() {
 
       } else if (mode === 'signup-otp') {
         await verifySignupOTP(email, otp);
-        setSuccess('Account created successfully! Redirecting to Log In...');
+        setSuccess('Account created successfully! Opening Chatify...');
         setPassword('');
         setOtp('');
         setTimeout(() => {
-          switchMode('login');
-          setSuccess('Account verified & created! Please sign in with your email and password.');
-        }, 1500);
+          router.push('/');
+        }, 1000);
 
       } else if (mode === 'forgot') {
         await sendResetOTP(email);

@@ -54,7 +54,10 @@ export default function ChatArea({ chat, socket, onBack }) {
 
       const handleMessageReceived = (newMessage) => {
         if (newMessage.chatId?._id === chat._id || newMessage.chatId === chat._id) {
-          setMessages((prev) => [...prev, newMessage]);
+          setMessages((prev) => {
+            const exists = prev.some((m) => m._id === newMessage._id);
+            return exists ? prev : [...prev, newMessage];
+          });
           scrollToBottom();
 
           api.put(`/messages/read/${chat._id}`);
@@ -136,6 +139,20 @@ export default function ChatArea({ chat, socket, onBack }) {
     if (socket && chat?._id) {
       socket.emit('stop_typing', { room: chat._id, user: { _id: user._id, name: user.name } });
     }
+  };
+
+  const handleDeleteMessage = (messageId) => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m._id === messageId ? { ...m, messageType: 'deleted', content: '' } : m
+      )
+    );
+  };
+
+  const handleReactMessage = (messageId, reactions) => {
+    setMessages((prev) =>
+      prev.map((m) => (m._id === messageId ? { ...m, reactions } : m))
+    );
   };
 
   if (!chat) {
@@ -294,6 +311,8 @@ export default function ChatArea({ chat, socket, onBack }) {
                 key={msg._id || index}
                 message={msg}
                 isSent={isSent}
+                onDelete={handleDeleteMessage}
+                onReact={handleReactMessage}
               />
             );
           })
